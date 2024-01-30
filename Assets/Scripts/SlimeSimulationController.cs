@@ -14,6 +14,7 @@ public class SlimeController : MonoBehaviour
     public float moveSpeed;
     public float evaporateSpeed;
     public float diffuseRate;
+    [Range(0f, 3f)]
     public float turnSpeed;
 
     public float sensorOffsetDist;
@@ -34,13 +35,13 @@ public class SlimeController : MonoBehaviour
         public float angle;
     }
 
-    private int numAgents = 100000;
+    private int numAgents = 1000000;
     
 
     void Start()
     {
-        _mapWidth = 1920;
-        _mapHeight = 1080;
+        _mapWidth = 2048;
+        _mapHeight = 2048;
         
         Debug.Log("Support Compute: " + SystemInfo.supportsComputeShaders);
 
