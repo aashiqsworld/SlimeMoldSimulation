@@ -34,7 +34,7 @@ public class SlimeController : MonoBehaviour
         public float angle;
     }
 
-    private int numAgents = 3200;
+    private int numAgents = 100000;
     
 
     void Start()
@@ -60,6 +60,7 @@ public class SlimeController : MonoBehaviour
         _processTrailMapKernelHandle = slimeSimShader.FindKernel("ProcessTrailMap");
         _resetTrailMapKernelHandle = slimeSimShader.FindKernel("ResetTrailMap");
         slimeSimShader.SetTexture(_updateKernelHandle, TrailMap, _TrailMap);
+        slimeSimShader.SetTexture(_updateKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
         slimeSimShader.SetTexture(_processTrailMapKernelHandle, TrailMap, _TrailMap);
         slimeSimShader.SetTexture(_processTrailMapKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
         slimeSimShader.SetTexture(_resetTrailMapKernelHandle, TrailMap, _TrailMap);
@@ -72,9 +73,9 @@ public class SlimeController : MonoBehaviour
         evaporateSpeed = .14f;
         diffuseRate = 47.96f;
 
-        turnSpeed = 100f;
-        sensorOffsetDist = 5f;
-        sensorSize = 5f;
+        turnSpeed = 0.23f;
+        sensorOffsetDist = 6f;
+        sensorSize = 2f;
         sensorAngleDegrees = 45f;
         
         SetAgents();
@@ -104,7 +105,7 @@ public class SlimeController : MonoBehaviour
         slimeSimShader.SetFloat("moveSpeed", moveSpeed);
         slimeSimShader.SetFloat("evaporateSpeed", evaporateSpeed);
         slimeSimShader.SetFloat("diffuseRate", diffuseRate);
-        slimeSimShader.SetFloat("turnSpeed", turnSpeed);
+        slimeSimShader.SetFloat("slimeTurnSpeed", turnSpeed);
 
         slimeSimShader.SetFloat("sensorOffsetDist", sensorOffsetDist);
         slimeSimShader.SetFloat("sensorSize", sensorSize);
