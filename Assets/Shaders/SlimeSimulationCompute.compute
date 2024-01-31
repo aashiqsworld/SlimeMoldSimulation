@@ -149,9 +149,9 @@ void ProcessTrailMap (uint3 id : SV_DispatchThreadID)
     TrailMap[id.xy] = max(0, blurredCol - evaporateSpeed * deltaTime);
 }
 
-#pragma kernel ResetTrailMap
+#pragma kernel PostProcessTrailMap
 [numthreads(8,8,1)]
-void ResetTrailMap (uint3 id : SV_DispatchThreadID)
+void PostProcessTrailMap (uint3 id : SV_DispatchThreadID)
 {
-    // TrailMap[id.xy] = ProcessedTrailMap[id.xy];
+     ProcessedTrailMap[id.xy] = TrailMap[id.xy];
 }

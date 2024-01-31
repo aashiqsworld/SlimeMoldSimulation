@@ -20,11 +20,13 @@ public class SlimeController : MonoBehaviour
     public float sensorOffsetDist;
     public float sensorSize;
     public float sensorAngleDegrees;
+
+    public Gradient slimeGradient;
     
     private RenderTexture _TrailMap;
     private RenderTexture _ProcessedTrailMap;
     private ComputeBuffer _agentCB;
-    private int _updateKernelHandle, _processTrailMapKernelHandle, _resetTrailMapKernelHandle;
+    private int _updateKernelHandle, _processTrailMapKernelHandle, _postProcessTrailMapKernelHandle;
     private static readonly int TrailMap = Shader.PropertyToID("TrailMap");
 
     private int _mapWidth, _mapHeight;
@@ -35,7 +37,7 @@ public class SlimeController : MonoBehaviour
         public float angle;
     }
 
-    private int numAgents = 1000000;
+    private int numAgents = 10000;
     
 
     void Start()
@@ -59,13 +61,14 @@ public class SlimeController : MonoBehaviour
         
         _updateKernelHandle = slimeSimShader.FindKernel("Update");
         _processTrailMapKernelHandle = slimeSimShader.FindKernel("ProcessTrailMap");
-        _resetTrailMapKernelHandle = slimeSimShader.FindKernel("ResetTrailMap");
+        _postProcessTrailMapKernelHandle = slimeSimShader.FindKernel("PostProcessTrailMap");
+        
         slimeSimShader.SetTexture(_updateKernelHandle, TrailMap, _TrailMap);
         slimeSimShader.SetTexture(_updateKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
         slimeSimShader.SetTexture(_processTrailMapKernelHandle, TrailMap, _TrailMap);
         slimeSimShader.SetTexture(_processTrailMapKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
-        slimeSimShader.SetTexture(_resetTrailMapKernelHandle, TrailMap, _TrailMap);
-        slimeSimShader.SetTexture(_resetTrailMapKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
+        slimeSimShader.SetTexture(_postProcessTrailMapKernelHandle, TrailMap, _TrailMap);
+        slimeSimShader.SetTexture(_postProcessTrailMapKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
         
         slimeRTDisplay.texture = _TrailMap;
 
@@ -76,7 +79,7 @@ public class SlimeController : MonoBehaviour
 
         turnSpeed = 0.23f;
         sensorOffsetDist = 6f;
-        sensorSize = 2f;
+        sensorSize = 1f;
         sensorAngleDegrees = 45f;
         
         SetAgents();
@@ -118,12 +121,12 @@ public class SlimeController : MonoBehaviour
         
         slimeSimShader.Dispatch(_updateKernelHandle, numAgents/32, 1, 1);
         slimeSimShader.Dispatch(_processTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
-        // slimeSimShader.Dispatch(_resetTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
+        slimeSimShader.Dispatch(_postProcessTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        Graphics.Blit(_TrailMap, destination);
+        Graphics.Blit(_ProcessedTrailMap, destination);
     }
 
     private void OnDestroy()
