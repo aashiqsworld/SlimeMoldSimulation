@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -11,6 +12,9 @@ public class SlimeController : MonoBehaviour
 {
     public ComputeShader slimeSimShader;
     public RawImage slimeRTDisplay;
+    public SpawnPattern spawnPattern = SpawnPattern.Center;
+    public SpawnAngle spawnAngle = SpawnAngle.TowardsCenter;
+    
     public float moveSpeed;
     public float evaporateSpeed;
     public float diffuseRate;
@@ -36,8 +40,22 @@ public class SlimeController : MonoBehaviour
         public Vector2 position;
         public float angle;
     }
+    
+    public enum SpawnPattern
+    {
+        Center,
+        Random,
+        RandomInCircle,
+    }
 
-    private int numAgents = 10000;
+    public enum SpawnAngle
+    {
+        Random,
+        TowardsCenter,
+        AwayFromCenter,
+    }
+
+    private int numAgents = 1000000;
     
 
     void Start()
@@ -88,13 +106,60 @@ public class SlimeController : MonoBehaviour
     void SetAgents()
     {
         Agent[] agents = new Agent[numAgents];
-
-        for (int i = 0; i < numAgents; i++)
+        Vector2 mapCenter = new Vector2(_mapWidth / 2, _mapHeight / 2);
+        
+        // set the position of the particles
+        if (spawnPattern == SpawnPattern.Center)
         {
-            float randomAngle = Random.value * Mathf.PI * 2;
-            agents[i] = new Agent() { position = new Vector2(_mapWidth/2, _mapHeight/2), angle = randomAngle};
+            for (int i = 0; i < numAgents; i++)
+            {
+                agents[i] = new Agent() { position = mapCenter};
+            }
         }
-
+        else if (spawnPattern == SpawnPattern.RandomInCircle)
+        {
+            float radius = Mathf.Min(_mapHeight, _mapWidth) / 2f * 0.85f;
+            
+            for (int i = 0; i < numAgents; i++)  {
+                agents[i] = new Agent()
+                {
+                    position = (radius * Random.insideUnitCircle) + mapCenter
+                };
+            }
+        }
+        else if (spawnPattern == SpawnPattern.Random)
+        {
+            for (int i = 0; i < numAgents; i++)  {
+                agents[i] = new Agent()
+                {
+                    position = new Vector2(Random.value * _mapWidth, Random.value * _mapHeight)
+                };
+            }
+        }
+        
+        // set the angle of the particles
+        if (spawnAngle == SpawnAngle.TowardsCenter)
+        {
+            for (int i = 0; i < numAgents; i++)
+            {
+                agents[i].angle = Mathf.Atan2((mapCenter - agents[i].position).normalized.y, (mapCenter - agents[i].position).normalized.x);
+            }
+        }
+        else if (spawnAngle == SpawnAngle.AwayFromCenter)
+        {
+            for (int i = 0; i < numAgents; i++)
+            {
+                agents[i].angle = Mathf.Atan2((agents[i].position - mapCenter).normalized.y, (agents[i].position - mapCenter).normalized.x);
+            }
+        }
+        else if (spawnAngle == SpawnAngle.Random)
+        {
+            for (int i = 0; i < numAgents; i++)
+            {
+                agents[i].angle = Random.value * Mathf.PI * 2;
+            }
+        }
+        
         _agentCB = new ComputeBuffer(numAgents, sizeof(float)*3);
         _agentCB.SetData(agents);
         slimeSimShader.SetBuffer(_updateKernelHandle, "agents", _agentCB);
@@ -122,6 +187,11 @@ public class SlimeController : MonoBehaviour
         slimeSimShader.Dispatch(_updateKernelHandle, numAgents/32, 1, 1);
         slimeSimShader.Dispatch(_processTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
         slimeSimShader.Dispatch(_postProcessTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            SetAgents();
+        }
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
