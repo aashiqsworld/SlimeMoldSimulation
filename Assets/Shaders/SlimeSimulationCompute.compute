@@ -8,6 +8,7 @@ struct Agent
 
 RWTexture2D<float4> TrailMap;
 RWTexture2D<float4> ProcessedTrailMap;
+
 int width;
 int height;
 
@@ -25,6 +26,9 @@ float deltaTime;
 float sensorOffsetDist;
 float sensorSize;
 float sensorAngleDegrees;
+
+Texture2D<float4> Gradient;
+int gradientWidth;
 
 uint hash(uint state)
 {
@@ -153,5 +157,9 @@ void ProcessTrailMap (uint3 id : SV_DispatchThreadID)
 [numthreads(8,8,1)]
 void PostProcessTrailMap (uint3 id : SV_DispatchThreadID)
 {
-     ProcessedTrailMap[id.xy] = TrailMap[id.xy];
+    float val = TrailMap[id.xy];
+    float4 colorFromGradient = Gradient[uint2(val*gradientWidth , 1)];
+    ProcessedTrailMap[id.xy] = colorFromGradient;
+
+    
 }

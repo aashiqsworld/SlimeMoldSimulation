@@ -32,8 +32,8 @@ namespace mattatz.Utils {
     public class GradientTexCreator : EditorWindow {
 
         [SerializeField] Gradient gradient;
-        [SerializeField] int width = 128;
-        [SerializeField] int height = 16;
+        [SerializeField] int width = 256;
+        [SerializeField] int height = 4;
         [SerializeField] string fileName = "Gradient";
 
         [MenuItem("Custom/GradientTex")]
@@ -66,7 +66,7 @@ namespace mattatz.Utils {
             }
 
             if(GUILayout.Button("Save")) {
-                string path = EditorUtility.SaveFolderPanel("Select an output path", "", "");
+                string path = EditorUtility.SaveFolderPanel("Select an output path", "Assets/", "");
                 if(path.Length > 0) {
                     var tex = GradientTexGen.Create(gradient, width, height);
                     byte[] pngData = tex.EncodeToPNG();

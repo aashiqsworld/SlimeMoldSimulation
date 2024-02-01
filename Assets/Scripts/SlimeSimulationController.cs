@@ -15,6 +15,9 @@ public class SlimeController : MonoBehaviour
     public SpawnPattern spawnPattern = SpawnPattern.Center;
     public SpawnAngle spawnAngle = SpawnAngle.TowardsCenter;
     
+    public int numAgents = 100000;
+
+    
     public float moveSpeed;
     public float evaporateSpeed;
     public float diffuseRate;
@@ -25,7 +28,7 @@ public class SlimeController : MonoBehaviour
     public float sensorSize;
     public float sensorAngleDegrees;
 
-    public Gradient slimeGradient;
+    public Texture slimeGradient;
     
     private RenderTexture _TrailMap;
     private RenderTexture _ProcessedTrailMap;
@@ -55,7 +58,6 @@ public class SlimeController : MonoBehaviour
         AwayFromCenter,
     }
 
-    private int numAgents = 1000000;
     
 
     void Start()
@@ -88,6 +90,7 @@ public class SlimeController : MonoBehaviour
         slimeSimShader.SetTexture(_postProcessTrailMapKernelHandle, TrailMap, _TrailMap);
         slimeSimShader.SetTexture(_postProcessTrailMapKernelHandle, "ProcessedTrailMap", _ProcessedTrailMap);
         
+        
         slimeRTDisplay.texture = _TrailMap;
 
         
@@ -100,11 +103,14 @@ public class SlimeController : MonoBehaviour
         sensorSize = 1f;
         sensorAngleDegrees = 45f;
         
-        SetAgents();
+        ResetSimulation();
     }
 
-    void SetAgents()
+    void ResetSimulation()
     {
+        slimeSimShader.SetTexture(_postProcessTrailMapKernelHandle, "Gradient", slimeGradient);
+        slimeSimShader.SetInt("gradientWidth", slimeGradient.width);
+        
         Agent[] agents = new Agent[numAgents];
         Vector2 mapCenter = new Vector2(_mapWidth / 2, _mapHeight / 2);
         
@@ -190,7 +196,7 @@ public class SlimeController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            SetAgents();
+            ResetSimulation();
         }
     }
 
