@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 
-public class SlimeController : MonoBehaviour
+public class PhysicalSlimeSimulationController : MonoBehaviour
 {
     public ComputeShader slimeSimShader;
     public RawImage slimeRTDisplay;
@@ -29,6 +29,9 @@ public class SlimeController : MonoBehaviour
     public float sensorAngleDegrees;
 
     public Texture slimeGradient;
+
+    private Material slimeSurfaceMat;
+
     
     private RenderTexture _TrailMap;
     private RenderTexture _ProcessedTrailMap;
@@ -62,6 +65,7 @@ public class SlimeController : MonoBehaviour
 
     void Start()
     {
+        
         _mapWidth = 2048;
         _mapHeight = 2048;
         
@@ -102,6 +106,8 @@ public class SlimeController : MonoBehaviour
         sensorOffsetDist = 6f;
         sensorSize = 1f;
         sensorAngleDegrees = 45f;
+        
+        slimeSurfaceMat = GetComponent<Renderer>().sharedMaterial;
         
         ResetSimulation();
     }
@@ -172,8 +178,11 @@ public class SlimeController : MonoBehaviour
         
     }
 
-    void Update()
+    void FixedUpdate()
     {
+        slimeSurfaceMat.SetTexture("_ColorSlimeTex", _ProcessedTrailMap);
+        slimeSurfaceMat.SetTexture("_ValueSlimeTex", _TrailMap);
+        
         slimeSimShader.SetFloat("deltaTime", Time.fixedDeltaTime);
         slimeSimShader.SetFloat("time", Time.fixedTime);
         
@@ -198,11 +207,17 @@ public class SlimeController : MonoBehaviour
         {
             ResetSimulation();
         }
+        RotateSelf();
     }
 
+    void RotateSelf()
+    {
+        transform.Rotate(Vector3.up, Time.deltaTime * 10f);
+    }
+    
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        Graphics.Blit(_ProcessedTrailMap, destination);
+        // Graphics.Blit(_ProcessedTrailMap, destination);
     }
 
     private void OnDestroy()
