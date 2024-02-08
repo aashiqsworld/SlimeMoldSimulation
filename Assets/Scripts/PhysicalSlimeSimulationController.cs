@@ -98,7 +98,7 @@ public class PhysicalSlimeSimulationController : MonoBehaviour
         slimeRTDisplay.texture = _TrailMap;
 
         
-        moveSpeed = 6.6f;
+        moveSpeed = 150f;
         evaporateSpeed = .14f;
         diffuseRate = 47.96f;
 
@@ -203,11 +203,16 @@ public class PhysicalSlimeSimulationController : MonoBehaviour
         slimeSimShader.Dispatch(_processTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
         slimeSimShader.Dispatch(_postProcessTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
 
+        
+        RotateSelf();
+    }
+
+    private void Update()
+    {
         if (Input.GetKeyDown(KeyCode.Space))
         {
             ResetSimulation();
         }
-        RotateSelf();
     }
 
     void RotateSelf()
