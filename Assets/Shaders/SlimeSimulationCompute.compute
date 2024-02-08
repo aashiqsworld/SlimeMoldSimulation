@@ -113,12 +113,23 @@ void Update (uint3 id : SV_DispatchThreadID)
     float2 newPos = agent.position + direction * moveSpeed * deltaTime;
     
     // Clamp position to map boundaries, and pick new random move angle if hit boundary
-    if(newPos.x < 0 || newPos.x >= width || newPos.y < 0 || newPos.y >= height)
+    // if(newPos.x < 0 || newPos.x >= width || newPos.y < 0 || newPos.y >= height)
+    // {
+    //     newPos.x = min(width-0.01, max(0, newPos.x));
+    //     newPos.y = min(height-0.01, max(0, newPos.y));
+    //     agents[id.x].angle = scaleToRange01(random) * 2 * 3.1415;
+    // }
+
+    // Clamp position to circular map boundaries, and pick new random move angle if hit boundary
+    float radius = width/2;
+    float2 center = float2(width/2, height/2);
+    if((newPos.x-center.x)*(newPos.x-center.x) + (newPos.y-center.y)*(newPos.y-center.y) > radius*radius)
     {
-        newPos.x = min(width-0.01, max(0, newPos.x));
-        newPos.y = min(height-0.01, max(0, newPos.y));
+        newPos = agents[id.x].position;
         agents[id.x].angle = scaleToRange01(random) * 2 * 3.1415;
     }
+
+    
     
     // Set new position and draw trail
     agents[id.x].position = newPos;
