@@ -204,7 +204,7 @@ public class PhysicalSlimeSimulationController : MonoBehaviour
         slimeSimShader.Dispatch(_postProcessTrailMapKernelHandle, _mapWidth/8, _mapHeight/8, 1);
 
         
-        RotateSelf();
+        // RotateSelf();
     }
 
     private void Update()
